@@ -36,7 +36,7 @@ stages:
            inputs:
              azureSubscription: '$(azureServiceConnection)'
              addSpnToEnvironment: true
-             scriptType: 'bash'
+             scriptType: 'pscore'
              scriptLocation: 'inlineScript'
              inlineScript: |
               $ErrorActionPreference = "Stop"
@@ -75,7 +75,7 @@ stages:
            inputs:
              azureSubscription: '$(azureServiceConnection)'
              addSpnToEnvironment: true
-             scriptType: 'bash'
+             scriptType: 'pscore'
              scriptLocation: 'inlineScript'
              inlineScript: |
               $ErrorActionPreference = "Stop"
@@ -134,7 +134,7 @@ stages:
                  inputs:
                    azureSubscription: '$(azureServiceConnection)'
                    addSpnToEnvironment: true
-                   scriptType: 'bash'
+                   scriptType: 'pscore'
                    scriptLocation: 'inlineScript'
                    inlineScript: |
                     $ErrorActionPreference = "Stop"
@@ -149,6 +149,5 @@ stages:
                     $env:ARM_OIDC_AZURE_SERVICE_CONNECTION_ID = "$AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
 
                     Set-Location "$(terraformWorkingDirectory)"
-
-                     terraform init -input=false
-                     terraform apply -input=false -lock-timeout=300s "$(Pipeline.Workspace)/terraform-plan/tfplan"
+                    terraform init -input=false
+                    terraform apply -input=false -lock-timeout=300s "$(Pipeline.Workspace)/terraform-plan/tfplan"
