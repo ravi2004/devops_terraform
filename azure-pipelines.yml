@@ -32,6 +32,22 @@ stages:
              terraformVersion: '$(terraformVersion)'
 
          - task: AzureCLI@2
+           displayName: 'Ensure TFState Container Exists'
+           inputs:
+             azureSubscription: '$(azureServiceConnection)'
+             scriptType: 'pscore'
+             scriptLocation: 'inlineScript'
+             inlineScript: |
+              $ErrorActionPreference = "Stop"
+              $containerExists = az storage container exists --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login --query exists -o tsv
+              if ($containerExists -eq "false") {
+                    Write-Host "Container 'tfstate' not found. Creating it now..."
+                    az storage container create --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login
+                } else {
+                    Write-Host "Container 'tfstate' already exists."
+                }
+
+         - task: AzureCLI@2
            displayName: 'Terraform fmt and validate'
            inputs:
              azureSubscription: '$(azureServiceConnection)'
@@ -69,6 +85,22 @@ stages:
            displayName: 'Install Terraform'
            inputs:
              terraformVersion: '$(terraformVersion)'
+
+         - task: AzureCLI@2
+           displayName: 'Ensure TFState Container Exists'
+           inputs:
+             azureSubscription: '$(azureServiceConnection)'
+             scriptType: 'pscore'
+             scriptLocation: 'inlineScript'
+             inlineScript: |
+              $ErrorActionPreference = "Stop"
+              $containerExists = az storage container exists --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login --query exists -o tsv
+              if ($containerExists -eq "false") {
+                    Write-Host "Container 'tfstate' not found. Creating it now..."
+                    az storage container create --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login
+                } else {
+                    Write-Host "Container 'tfstate' already exists."
+                }             
 
          - task: AzureCLI@2
            displayName: 'Terraform plan'
@@ -116,6 +148,21 @@ stages:
            deploy:
              steps:
                - checkout: self
+               - task: AzureCLI@2
+                 displayName: 'Ensure TFState Container Exists'
+                 inputs:
+                   azureSubscription: '$(azureServiceConnection)'
+                   scriptType: 'pscore'
+                   scriptLocation: 'inlineScript'
+                   inlineScript: |
+                     $ErrorActionPreference = "Stop"
+                     $containerExists = az storage container exists --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login --query exists -o tsv
+                     if ($containerExists -eq "false") {
+                           Write-Host "Container 'tfstate' not found. Creating it now..."
+                           az storage container create --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login
+                       } else {
+                           Write-Host "Container 'tfstate' already exists."
+                       }
 
                - task: DownloadPipelineArtifact@2
                  displayName: 'Download Terraform plan artifact'
