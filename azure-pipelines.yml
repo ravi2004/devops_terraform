@@ -14,7 +14,7 @@ pool:
 variables:
  terraformWorkingDirectory: 'infra'
  terraformVersion: '1.10.5'
- azureServiceConnection: 'sc-terraform-prod'
+ azureServiceConnection: 'AzureDevops-Connection'
  environmentName: 'prod'
 
 stages:
