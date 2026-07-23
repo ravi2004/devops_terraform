@@ -128,8 +128,8 @@ stages:
               terraform show -no-color tfplan | Out-File -FilePath "tfplan.txt" -Encoding ascii
 
               New-Item -ItemType Directory -Force -Path "$(Build.ArtifactStagingDirectory)/terraform-plan"
-              Copy-Item -Path "tfplan" -Destination "$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan" -Force
-              Copy-Item -Path "tfplan.txt" -Destination "$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan.txt" -Force
+              Copy-Item -Path "./tfplan" -Destination "$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan" -Force
+              Copy-Item -Path "./tfplan.txt" -Destination "$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan.txt" -Force
 
          - publish: '$(Build.ArtifactStagingDirectory)/terraform-plan'
            artifact: 'terraform-plan'
