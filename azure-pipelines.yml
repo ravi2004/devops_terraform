@@ -127,7 +127,7 @@ stages:
 
                 terraform init -input=false
                 Write-Host "Running terraform plan..."
-                terraform plan -input=false -out="main.tfplan" -var-file=prod.tfvars -lock-timeout=300s 
+                terraform plan -input=false -out="main.tfplan" --var-file=prod.tfvars -lock-timeout=300s 
                 Write-Host "Ending terraform plan..."
                 terraform show -no-color main.tfplan | Out-File -FilePath "tfplan.txt" -Encoding ascii
                 dir
