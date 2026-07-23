@@ -35,7 +35,7 @@ stages:
             displayName: "Ensure TFState Container Exists"
             inputs:
               azureSubscription: "$(azureServiceConnection)"
-              scriptType: "pscore"
+              scriptType: "ps"
               scriptLocation: "inlineScript"
               inlineScript: |
                 $ErrorActionPreference = "Stop"
@@ -52,7 +52,7 @@ stages:
             inputs:
               azureSubscription: "$(azureServiceConnection)"
               addSpnToEnvironment: true
-              scriptType: "pscore"
+              scriptType: "ps"
               scriptLocation: "inlineScript"
               inlineScript: |
                 $ErrorActionPreference = "Stop"
@@ -90,7 +90,7 @@ stages:
             displayName: "Ensure TFState Container Exists"
             inputs:
               azureSubscription: "$(azureServiceConnection)"
-              scriptType: "pscore"
+              scriptType: "ps"
               scriptLocation: "inlineScript"
               inlineScript: |
                 $ErrorActionPreference = "Stop"
@@ -108,7 +108,7 @@ stages:
             inputs:
               azureSubscription: "$(azureServiceConnection)"
               addSpnToEnvironment: true
-              scriptType: "pscore"
+              scriptType: "ps"
               scriptLocation: "inlineScript"
               inlineScript: |
                 $ErrorActionPreference = "Stop"
@@ -155,7 +155,7 @@ stages:
                   displayName: "Ensure TFState Container Exists"
                   inputs:
                     azureSubscription: "$(azureServiceConnection)"
-                    scriptType: "pscore"
+                    scriptType: "ps"
                     scriptLocation: "inlineScript"
                     inlineScript: |
                       $ErrorActionPreference = "Stop"
@@ -184,7 +184,7 @@ stages:
                   inputs:
                     azureSubscription: "$(azureServiceConnection)"
                     addSpnToEnvironment: true
-                    scriptType: "pscore"
+                    scriptType: "ps"
                     scriptLocation: "inlineScript"
                     inlineScript: |
                       $ErrorActionPreference = "Stop"
