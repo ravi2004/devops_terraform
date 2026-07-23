@@ -9,7 +9,7 @@ pr:
      - main
 
 pool:
-  name: 'Azure Pipelines'
+  name: 'Azure-VM-Agent-VM-For-Deployment'
 
 variables:
   terraformWorkingDirectory: "infra"
