@@ -22,7 +22,7 @@ stages:
     displayName: "Validate Terraform"
     jobs:
       - job: Validate
-        displayName: "Run Prereqisite Validation"
+        displayName: "Validating Prereqisite (Terraform, TF State Container etc.)"
         steps:
           - checkout: self
           - task: PowerShell@2
@@ -65,7 +65,7 @@ stages:
               terraformVersion: "$(terraformVersion)"
 
           - task: AzureCLI@2
-            displayName: "Ensure TFState Container Exists"
+            displayName: "Checing Terraform State (TFState) Container Exists"
             inputs:
               azureSubscription: "$(azureServiceConnection)"
               scriptType: "ps"
@@ -77,7 +77,7 @@ stages:
                       Write-Host "Container 'tfstate' not found. Creating it now..."
                       az storage container create --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login
                   } else {
-                      Write-Host "Container 'tfstate' already exists."
+                      Write-Host "Container 'tfstate' already exists."                      
                   }
 
           - task: AzureCLI@2
@@ -110,31 +110,9 @@ stages:
     dependsOn: Validate
     jobs:
       - job: Plan
-        displayName: "Create Terraform plan"
+        displayName: "Creating Terraform plan"
         steps:
           - checkout: self
-
-          - task: TerraformInstaller@1
-            displayName: "Install Terraform"
-            inputs:
-              terraformVersion: "$(terraformVersion)"
-
-          - task: AzureCLI@2
-            displayName: "Ensure TFState Container Exists"
-            inputs:
-              azureSubscription: "$(azureServiceConnection)"
-              scriptType: "ps"
-              scriptLocation: "inlineScript"
-              inlineScript: |
-                $ErrorActionPreference = "Stop"
-                hostname
-                $containerExists = az storage container exists --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login --query exists -o tsv
-                if ($containerExists -eq "false") {
-                      Write-Host "Container 'tfstate' not found. Creating it now..."
-                      az storage container create --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login
-                  } else {
-                      Write-Host "Container 'tfstate' already exists."
-                  }
 
           - task: AzureCLI@2
             displayName: "Terraform plan"
@@ -177,43 +155,23 @@ stages:
     condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
     jobs:
       - deployment: Apply
-        displayName: "Apply Terraform to production"
+        displayName: "Apply Terraform Action to production"
         environment: "$(environmentName)"
         strategy:
           runOnce:
             deploy:
               steps:
                 - checkout: self
-                - task: AzureCLI@2
-                  displayName: "Ensure TFState Container Exists"
-                  inputs:
-                    azureSubscription: "$(azureServiceConnection)"
-                    scriptType: "ps"
-                    scriptLocation: "inlineScript"
-                    inlineScript: |
-                      $ErrorActionPreference = "Stop"
-                      $containerExists = az storage container exists --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login --query exists -o tsv
-                      if ($containerExists -eq "false") {
-                            Write-Host "Container 'tfstate' not found. Creating it now..."
-                            az storage container create --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login
-                        } else {
-                            Write-Host "Container 'tfstate' already exists."
-                        }
 
                 - task: DownloadPipelineArtifact@2
-                  displayName: "Download Terraform plan artifact"
+                  displayName: "Downloading Terraform plan artifact"
                   inputs:
                     buildType: "current"
                     artifactName: "terraform-plan"
                     targetPath: "$(Pipeline.Workspace)/terraform-plan"
 
-                - task: TerraformInstaller@1
-                  displayName: "Install Terraform"
-                  inputs:
-                    terraformVersion: "$(terraformVersion)"
-
                 - task: AzureCLI@2
-                  displayName: "Terraform apply"
+                  displayName: "Terraform applying action"
                   inputs:
                     azureSubscription: "$(azureServiceConnection)"
                     addSpnToEnvironment: true
