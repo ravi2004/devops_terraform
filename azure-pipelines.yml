@@ -1,7 +1,7 @@
 trigger:
- branches:
-   include:
-     - main
+  branches:
+    include:
+      - main
 
 #pr:
 # branches:
@@ -9,194 +9,195 @@ trigger:
 #     - main
 
 pool:
- name: 'Azure Pipelines'
- vmImage: 'windows-latest'
- 
+  name: "Azure Pipelines"
+  vmImage: "windows-latest"
 
 variables:
- terraformWorkingDirectory: 'infra'
- terraformVersion: '1.15.8'
- azureServiceConnection: 'AzureDevops-Connection'
- environmentName: 'prod'
+  terraformWorkingDirectory: "infra"
+  terraformVersion: "1.15.8"
+  azureServiceConnection: "AzureDevops-Connection"
+  environmentName: "prod"
 
 stages:
- - stage: Validate
-   displayName: 'Validate Terraform'
-   jobs:
-     - job: Validate
-       displayName: 'Run terraform fmt and validate'
-       steps:
-         - checkout: self
+  - stage: Validate
+    displayName: "Validate Terraform"
+    jobs:
+      - job: Validate
+        displayName: "Run terraform fmt and validate"
+        steps:
+          - checkout: self
 
-         - task: TerraformInstaller@1
-           displayName: 'Install Terraform'
-           inputs:
-             terraformVersion: '$(terraformVersion)'
+          - task: TerraformInstaller@1
+            displayName: "Install Terraform"
+            inputs:
+              terraformVersion: "$(terraformVersion)"
 
-         - task: AzureCLI@2
-           displayName: 'Ensure TFState Container Exists'
-           inputs:
-             azureSubscription: '$(azureServiceConnection)'
-             scriptType: 'pscore'
-             scriptLocation: 'inlineScript'
-             inlineScript: |
-              $ErrorActionPreference = "Stop"
-              $containerExists = az storage container exists --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login --query exists -o tsv
-              if ($containerExists -eq "false") {
-                    Write-Host "Container 'tfstate' not found. Creating it now..."
-                    az storage container create --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login
-                } else {
-                    Write-Host "Container 'tfstate' already exists."
-                }
+          - task: AzureCLI@2
+            displayName: "Ensure TFState Container Exists"
+            inputs:
+              azureSubscription: "$(azureServiceConnection)"
+              scriptType: "pscore"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                $ErrorActionPreference = "Stop"
+                $containerExists = az storage container exists --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login --query exists -o tsv
+                if ($containerExists -eq "false") {
+                      Write-Host "Container 'tfstate' not found. Creating it now..."
+                      az storage container create --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login
+                  } else {
+                      Write-Host "Container 'tfstate' already exists."
+                  }
 
-         - task: AzureCLI@2
-           displayName: 'Terraform fmt and validate'
-           inputs:
-             azureSubscription: '$(azureServiceConnection)'
-             addSpnToEnvironment: true
-             scriptType: 'pscore'
-             scriptLocation: 'inlineScript'
-             inlineScript: |
-              $ErrorActionPreference = "Stop"
+          - task: AzureCLI@2
+            displayName: "Terraform fmt and validate"
+            inputs:
+              azureSubscription: "$(azureServiceConnection)"
+              addSpnToEnvironment: true
+              scriptType: "pscore"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                $ErrorActionPreference = "Stop"
 
-              $env:TF_IN_AUTOMATION = "true"
-              $env:ARM_USE_OIDC = "true"
-              $env:ARM_USE_AZUREAD = "true"
-              $env:ARM_OIDC_TOKEN = "$env:idToken"
-              $env:ARM_CLIENT_ID = "$env:servicePrincipalId"
-              $env:ARM_TENANT_ID = "$env:tenantId"
-              $env:ARM_SUBSCRIPTION_ID = $(az account show --query id -o tsv)
-              $env:ARM_OIDC_AZURE_SERVICE_CONNECTION_ID = "$env:AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
+                $env:TF_IN_AUTOMATION = "true"
+                $env:ARM_USE_OIDC = "true"
+                $env:ARM_USE_AZUREAD = "true"
+                $env:ARM_OIDC_TOKEN = "$env:idToken"
+                $env:ARM_CLIENT_ID = "$env:servicePrincipalId"
+                $env:ARM_TENANT_ID = "$env:tenantId"
+                $env:ARM_SUBSCRIPTION_ID = $(az account show --query id -o tsv)
+                $env:ARM_OIDC_AZURE_SERVICE_CONNECTION_ID = "$env:AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
 
-              Set-Location "$(terraformWorkingDirectory)"
+                Set-Location "$(terraformWorkingDirectory)"
 
-              terraform fmt -check -recursive
-              terraform init -input=false
-              terraform validate
+                terraform fmt -check -recursive
+                terraform init -input=false
+                terraform validate
 
- - stage: Plan
-   displayName: 'Plan Terraform'
-   dependsOn: Validate
-   jobs:
-     - job: Plan
-       displayName: 'Create Terraform plan'
-       steps:
-         - checkout: self
+  - stage: Plan
+    displayName: "Plan Terraform"
+    dependsOn: Validate
+    jobs:
+      - job: Plan
+        displayName: "Create Terraform plan"
+        steps:
+          - checkout: self
 
-         - task: TerraformInstaller@1
-           displayName: 'Install Terraform'
-           inputs:
-             terraformVersion: '$(terraformVersion)'
+          - task: TerraformInstaller@1
+            displayName: "Install Terraform"
+            inputs:
+              terraformVersion: "$(terraformVersion)"
 
-         - task: AzureCLI@2
-           displayName: 'Ensure TFState Container Exists'
-           inputs:
-             azureSubscription: '$(azureServiceConnection)'
-             scriptType: 'pscore'
-             scriptLocation: 'inlineScript'
-             inlineScript: |
-              $ErrorActionPreference = "Stop"
-              $containerExists = az storage container exists --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login --query exists -o tsv
-              if ($containerExists -eq "false") {
-                    Write-Host "Container 'tfstate' not found. Creating it now..."
-                    az storage container create --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login
-                } else {
-                    Write-Host "Container 'tfstate' already exists."
-                }             
+          - task: AzureCLI@2
+            displayName: "Ensure TFState Container Exists"
+            inputs:
+              azureSubscription: "$(azureServiceConnection)"
+              scriptType: "pscore"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                $ErrorActionPreference = "Stop"
+                $containerExists = az storage container exists --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login --query exists -o tsv
+                if ($containerExists -eq "false") {
+                      Write-Host "Container 'tfstate' not found. Creating it now..."
+                      az storage container create --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login
+                  } else {
+                      Write-Host "Container 'tfstate' already exists."
+                  }
 
-         - task: AzureCLI@2
-           displayName: 'Terraform plan'
-           inputs:
-             azureSubscription: '$(azureServiceConnection)'
-             addSpnToEnvironment: true
-             scriptType: 'pscore'
-             scriptLocation: 'inlineScript'
-             inlineScript: |
-              $ErrorActionPreference = "Stop"
+          - task: AzureCLI@2
+            displayName: "Terraform plan"
+            inputs:
+              azureSubscription: "$(azureServiceConnection)"
+              addSpnToEnvironment: true
+              scriptType: "pscore"
+              scriptLocation: "inlineScript"
+              inlineScript: |
+                $ErrorActionPreference = "Stop"
 
-              $env:TF_IN_AUTOMATION = "true"
-              $env:ARM_USE_OIDC = "true"
-              $env:ARM_USE_AZUREAD = "true"
-              $env:ARM_OIDC_TOKEN = "$env:idToken"
-              $env:ARM_CLIENT_ID = "$env:servicePrincipalId"
-              $env:ARM_TENANT_ID = "$env:tenantId"
-              $env:ARM_SUBSCRIPTION_ID = $(az account show --query id -o tsv)
-              $env:ARM_OIDC_AZURE_SERVICE_CONNECTION_ID = "$env:AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
+                $env:TF_IN_AUTOMATION = "true"
+                $env:ARM_USE_OIDC = "true"
+                $env:ARM_USE_AZUREAD = "true"
+                $env:ARM_OIDC_TOKEN = "$env:idToken"
+                $env:ARM_CLIENT_ID = "$env:servicePrincipalId"
+                $env:ARM_TENANT_ID = "$env:tenantId"
+                $env:ARM_SUBSCRIPTION_ID = $(az account show --query id -o tsv)
+                $env:ARM_OIDC_AZURE_SERVICE_CONNECTION_ID = "$env:AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
 
-              Set-Location "$(terraformWorkingDirectory)"
+                Set-Location "$(terraformWorkingDirectory)"
 
-              terraform init -input=false
-              terraform plan -input=false -out="main.tfplan" -var-file=prod.tfvars
-              terraform show -no-color main.tfplan | Out-File -FilePath "tfplan.txt" -Encoding ascii
-              dir
-              New-Item -ItemType Directory -Force -Path "$(Build.ArtifactStagingDirectory)/terraform-plan"
-              Copy-Item -Path "main.tfplan" -Destination "$(Build.ArtifactStagingDirectory)/terraform-plan/main.tfplan" -Force
-              Copy-Item -Path "./tfplan.txt" -Destination "$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan.txt" -Force
+                terraform init -input=false
+                Write-Host "Running terraform plan..."
+                terraform plan -input=false -out="main.tfplan" -var-file=prod.tfvars -lock-timeout=300s 
+                Write-Host "Ending terraform plan..."
+                terraform show -no-color main.tfplan | Out-File -FilePath "tfplan.txt" -Encoding ascii
+                dir
+                New-Item -ItemType Directory -Force -Path "$(Build.ArtifactStagingDirectory)/terraform-plan"
+                Copy-Item -Path "main.tfplan" -Destination "$(Build.ArtifactStagingDirectory)/terraform-plan/main.tfplan" -Force
+                Copy-Item -Path "./tfplan.txt" -Destination "$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan.txt" -Force
 
-         - publish: '$(Build.ArtifactStagingDirectory)/terraform-plan'
-           artifact: 'terraform-plan'
-           displayName: 'Publish Terraform plan artifact'
+          - publish: "$(Build.ArtifactStagingDirectory)/terraform-plan"
+            artifact: "terraform-plan"
+            displayName: "Publish Terraform plan artifact"
 
- - stage: Apply
-   displayName: 'Apply Terraform'
-   dependsOn: Plan
-   condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
-   jobs:
-     - deployment: Apply
-       displayName: 'Apply Terraform to production'
-       environment: '$(environmentName)'
-       strategy:
-         runOnce:
-           deploy:
-             steps:
-               - checkout: self
-               - task: AzureCLI@2
-                 displayName: 'Ensure TFState Container Exists'
-                 inputs:
-                   azureSubscription: '$(azureServiceConnection)'
-                   scriptType: 'pscore'
-                   scriptLocation: 'inlineScript'
-                   inlineScript: |
-                     $ErrorActionPreference = "Stop"
-                     $containerExists = az storage container exists --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login --query exists -o tsv
-                     if ($containerExists -eq "false") {
-                           Write-Host "Container 'tfstate' not found. Creating it now..."
-                           az storage container create --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login
-                       } else {
-                           Write-Host "Container 'tfstate' already exists."
-                       }
+  - stage: Apply
+    displayName: "Apply Terraform"
+    dependsOn: Plan
+    condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'))
+    jobs:
+      - deployment: Apply
+        displayName: "Apply Terraform to production"
+        environment: "$(environmentName)"
+        strategy:
+          runOnce:
+            deploy:
+              steps:
+                - checkout: self
+                - task: AzureCLI@2
+                  displayName: "Ensure TFState Container Exists"
+                  inputs:
+                    azureSubscription: "$(azureServiceConnection)"
+                    scriptType: "pscore"
+                    scriptLocation: "inlineScript"
+                    inlineScript: |
+                      $ErrorActionPreference = "Stop"
+                      $containerExists = az storage container exists --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login --query exists -o tsv
+                      if ($containerExists -eq "false") {
+                            Write-Host "Container 'tfstate' not found. Creating it now..."
+                            az storage container create --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login
+                        } else {
+                            Write-Host "Container 'tfstate' already exists."
+                        }
 
-               - task: DownloadPipelineArtifact@2
-                 displayName: 'Download Terraform plan artifact'
-                 inputs:
-                   buildType: 'current'
-                   artifactName: 'terraform-plan'
-                   targetPath: '$(Pipeline.Workspace)/terraform-plan'
+                - task: DownloadPipelineArtifact@2
+                  displayName: "Download Terraform plan artifact"
+                  inputs:
+                    buildType: "current"
+                    artifactName: "terraform-plan"
+                    targetPath: "$(Pipeline.Workspace)/terraform-plan"
 
-               - task: TerraformInstaller@1
-                 displayName: 'Install Terraform'
-                 inputs:
-                   terraformVersion: '$(terraformVersion)'
+                - task: TerraformInstaller@1
+                  displayName: "Install Terraform"
+                  inputs:
+                    terraformVersion: "$(terraformVersion)"
 
-               - task: AzureCLI@2
-                 displayName: 'Terraform apply'
-                 inputs:
-                   azureSubscription: '$(azureServiceConnection)'
-                   addSpnToEnvironment: true
-                   scriptType: 'pscore'
-                   scriptLocation: 'inlineScript'
-                   inlineScript: |
-                    $ErrorActionPreference = "Stop"
+                - task: AzureCLI@2
+                  displayName: "Terraform apply"
+                  inputs:
+                    azureSubscription: "$(azureServiceConnection)"
+                    addSpnToEnvironment: true
+                    scriptType: "pscore"
+                    scriptLocation: "inlineScript"
+                    inlineScript: |
+                      $ErrorActionPreference = "Stop"
 
-                    $env:TF_IN_AUTOMATION = "true"
-                    $env:ARM_USE_OIDC = "true"
-                    $env:ARM_USE_AZUREAD = "true"
-                    $env:ARM_OIDC_TOKEN = "$env:idToken"
-                    $env:ARM_CLIENT_ID = "$env:servicePrincipalId"
-                    $env:ARM_TENANT_ID = "$env:tenantId"
-                    $env:ARM_SUBSCRIPTION_ID = $(az account show --query id -o tsv)
-                    $env:ARM_OIDC_AZURE_SERVICE_CONNECTION_ID = "$env:AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
+                      $env:TF_IN_AUTOMATION = "true"
+                      $env:ARM_USE_OIDC = "true"
+                      $env:ARM_USE_AZUREAD = "true"
+                      $env:ARM_OIDC_TOKEN = "$env:idToken"
+                      $env:ARM_CLIENT_ID = "$env:servicePrincipalId"
+                      $env:ARM_TENANT_ID = "$env:tenantId"
+                      $env:ARM_SUBSCRIPTION_ID = $(az account show --query id -o tsv)
+                      $env:ARM_OIDC_AZURE_SERVICE_CONNECTION_ID = "$env:AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
 
-                    Set-Location "$(terraformWorkingDirectory)"
-                    terraform init -input=false
-                    terraform apply -input=false -lock-timeout=300s "$(Pipeline.Workspace)/terraform-plan/tfplan"
+                      Set-Location "$(terraformWorkingDirectory)"
+                      terraform init -input=false
+                      terraform apply -input=false -lock-timeout=300s "$(Pipeline.Workspace)/terraform-plan/tfplan"
