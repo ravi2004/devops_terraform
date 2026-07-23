@@ -126,7 +126,7 @@ stages:
               Set-Location "$(terraformWorkingDirectory)"
 
               terraform init -input=false
-              terraform plan -input=false -lock-timeout=300s -out=main.tfplan -var-file=prod.tfvars
+              terraform plan -input=false -lock-timeout=300s -out=main.tfplan -var-file=prod.tfvars --%
               terraform show -no-color main.tfplan | Out-File -FilePath "tfplan.txt" -Encoding ascii
               dir
               New-Item -ItemType Directory -Force -Path "$(Build.ArtifactStagingDirectory)/terraform-plan"
