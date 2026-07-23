@@ -9,8 +9,7 @@ pr:
      - main
 
 pool:
-  name: "Azure Pipelines"
-  vmImage: "windows-latest"
+  name: 'Azure Pipelines'
 
 variables:
   terraformWorkingDirectory: "infra"
