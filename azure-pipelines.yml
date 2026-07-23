@@ -9,7 +9,7 @@ trigger:
 #     - main
 
 pool:
- name: 'Azure Pipelines 1'
+ name: 'Azure Pipelines'
 
 variables:
  terraformWorkingDirectory: 'infra'
