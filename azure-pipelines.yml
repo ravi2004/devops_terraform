@@ -133,7 +133,7 @@ stages:
                 dir
                 New-Item -ItemType Directory -Force -Path "$(Build.ArtifactStagingDirectory)/terraform-plan"
                 Copy-Item -Path "main.tfplan" -Destination "$(Build.ArtifactStagingDirectory)/terraform-plan/main.tfplan" -Force
-                Copy-Item -Path "./tfplan.txt" -Destination "$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan.txt" -Force
+                Copy-Item -Path "tfplan.txt" -Destination "$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan.txt" -Force
 
           - publish: "$(Build.ArtifactStagingDirectory)/terraform-plan"
             artifact: "terraform-plan"
@@ -201,4 +201,4 @@ stages:
 
                       Set-Location "$(terraformWorkingDirectory)"
                       terraform init -input=false
-                      terraform apply -input=false -lock-timeout=300s "$(Pipeline.Workspace)/terraform-plan/tfplan"
+                      terraform apply -input=false -lock-timeout=300s "$(Pipeline.Workspace)/terraform-plan/main.tfplan"
