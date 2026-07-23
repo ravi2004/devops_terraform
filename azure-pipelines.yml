@@ -9,7 +9,7 @@ pr:
      - main
 
 pool:
- vmImage: 'ubuntu-latest'
+ name: 'Azure Pipelines'
 
 variables:
  terraformWorkingDirectory: 'infra'
@@ -39,22 +39,22 @@ stages:
              scriptType: 'bash'
              scriptLocation: 'inlineScript'
              inlineScript: |
-               set -euo pipefail
+              $ErrorActionPreference = "Stop"
 
-               export TF_IN_AUTOMATION=true
-               export ARM_USE_OIDC=true
-               export ARM_USE_AZUREAD=true
-               export ARM_OIDC_TOKEN="$idToken"
-               export ARM_CLIENT_ID="$servicePrincipalId"
-               export ARM_TENANT_ID="$tenantId"
-               export ARM_SUBSCRIPTION_ID="$(az account show --query id -o tsv)"
-               export ARM_OIDC_AZURE_SERVICE_CONNECTION_ID="$AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
+              $env:TF_IN_AUTOMATION = "true"
+              $env:ARM_USE_OIDC = "true"
+              $env:ARM_USE_AZUREAD = "true"
+              $env:ARM_OIDC_TOKEN = "$idToken"
+              $env:ARM_CLIENT_ID = "$servicePrincipalId"
+              $env:ARM_TENANT_ID = "$tenantId"
+              $env:ARM_SUBSCRIPTION_ID = $(az account show --query id -o tsv)
+              $env:ARM_OIDC_AZURE_SERVICE_CONNECTION_ID = "$AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
 
-               cd "$(terraformWorkingDirectory)"
+              Set-Location "$(terraformWorkingDirectory)"
 
-               terraform fmt -check -recursive
-               terraform init -input=false
-               terraform validate
+              terraform fmt -check -recursive
+              terraform init -input=false
+              terraform validate
 
  - stage: Plan
    displayName: 'Plan Terraform'
@@ -78,26 +78,26 @@ stages:
              scriptType: 'bash'
              scriptLocation: 'inlineScript'
              inlineScript: |
-               set -euo pipefail
+              $ErrorActionPreference = "Stop"
 
-               export TF_IN_AUTOMATION=true
-               export ARM_USE_OIDC=true
-               export ARM_USE_AZUREAD=true
-               export ARM_OIDC_TOKEN="$idToken"
-               export ARM_CLIENT_ID="$servicePrincipalId"
-               export ARM_TENANT_ID="$tenantId"
-               export ARM_SUBSCRIPTION_ID="$(az account show --query id -o tsv)"
-               export ARM_OIDC_AZURE_SERVICE_CONNECTION_ID="$AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
+              $env:TF_IN_AUTOMATION = "true"
+              $env:ARM_USE_OIDC = "true"
+              $env:ARM_USE_AZUREAD = "true"
+              $env:ARM_OIDC_TOKEN = "$idToken"
+              $env:ARM_CLIENT_ID = "$servicePrincipalId"
+              $env:ARM_TENANT_ID = "$tenantId"
+              $env:ARM_SUBSCRIPTION_ID = $(az account show --query id -o tsv)
+              $env:ARM_OIDC_AZURE_SERVICE_CONNECTION_ID = "$AZURESUBSCRIPTION_SERVICE_CONNECTION_ID"
 
-               cd "$(terraformWorkingDirectory)"
+              Set-Location "$(terraformWorkingDirectory)"
 
-               terraform init -input=false
-               terraform plan -input=false -lock-timeout=300s -out=tfplan -var-file=prod.tfvars
-               terraform show -no-color tfplan > tfplan.txt
+              terraform init -input=false
+              terraform plan -input=false -lock-timeout=300s -out=tfplan -var-file=prod.tfvars
+              terraform show -no-color tfplan | Out-File -FilePath "tfplan.txt" -Encoding ascii
 
-               mkdir -p "$(Build.ArtifactStagingDirectory)/terraform-plan"
-               cp tfplan "$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan"
-               cp tfplan.txt "$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan.txt"
+              New-Item -ItemType Directory -Force -Path "$(Build.ArtifactStagingDirectory)/terraform-plan"
+              Copy-Item -Path "tfplan" -Destination "$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan" -Force
+              Copy-Item -Path "tfplan.txt" -Destination "$(Build.ArtifactStagingDirectory)/terraform-plan/tfplan.txt" -Force
 
          - publish: '$(Build.ArtifactStagingDirectory)/terraform-plan'
            artifact: 'terraform-plan'
