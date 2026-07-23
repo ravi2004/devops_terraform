@@ -9,10 +9,11 @@ terraform {
  }
 
  backend "azurerm" {
-   use_oidc             = true
-   use_azuread_auth     = true
+   resource_group_name  = var.resource_group_name
    storage_account_name = "devopsstorageaccount1975"
    container_name       = "tfstate"
+   use_oidc             = true
+   use_azuread_auth     = true      
    key                  = "terraform-azure-devops/prod.terraform.tfstate"
  }
 }

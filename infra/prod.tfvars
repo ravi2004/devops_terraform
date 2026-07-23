@@ -1,5 +1,5 @@
 location            = "Central India"
-resource_group_name = "rg-terraform-azure-devops-prod"
+resource_group_name = "devops-rsg"
 vnet_name           = "vnet-terraform-azure-devops-prod"
 vnet_address_space  = ["10.10.0.0/16"]
 subnet_name         = "snet-app"
