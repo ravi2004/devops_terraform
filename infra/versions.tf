@@ -13,7 +13,7 @@ terraform {
    storage_account_name = "devopsstorageaccount1975"
    container_name       = "tfstate"
    use_oidc             = true
-   #use_azuread_auth     = true      
+   use_azuread_auth     = true      
    key                  = "terraform-azure-devops/prod.terraform.tfstate"
  }
 }
