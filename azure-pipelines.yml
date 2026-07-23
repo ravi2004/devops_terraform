@@ -36,7 +36,7 @@ stages:
                     # Get the version string (usually the first line of terraform -v)
                     $versionOutput = (terraform -v | Select-Object -First 1)
                     
-                    # Extract the semantic version number (X.Y.Z) using regex
+                    # Extract the semantic version number (1.15.8) using regex
                     if ($versionOutput -match '(\d+\.\d+\.\d+)') {
                         $currentVer = $Matches[1]
                         Write-Host "Found local Terraform version: $currentVer"
