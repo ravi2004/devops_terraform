@@ -22,13 +22,46 @@ stages:
     displayName: "Validate Terraform"
     jobs:
       - job: Validate
-        displayName: "Run terraform fmt and validate"
+        displayName: "Run Prereqisite Validation"
         steps:
           - checkout: self
+          - task: PowerShell@2
+            displayName: "Checking Terraform Version"
+            name: TFCheck
+            inputs:
+              targetType: 'inline'
+              script: |
+                # Check if terraform executable exists in the system PATH
+                if (Get-Command terraform -ErrorAction SilentlyContinue) {
+                    # Get the version string (usually the first line of terraform -v)
+                    $versionOutput = (terraform -v | Select-Object -First 1)
+                    
+                    # Extract the semantic version number (X.Y.Z) using regex
+                    if ($versionOutput -match '(\d+\.\d+\.\d+)') {
+                        $currentVer = $Matches[1]
+                        Write-Host "Found local Terraform version: $currentVer"
+                        
+                        # Compare with the target version variable
+                        if ($currentVer -eq "$(terraformVersion)") {
+                            Write-Host "Target version matches. Skipping installation."
+                            Write-Host "##vso[task.setvariable variable=skipInstall;isOutput=true]true"
+                        } else {
+                            Write-Host "Version mismatch. Proceeding with installation."
+                            Write-Host "##vso[task.setvariable variable=skipInstall;isOutput=true]false"
+                        }
+                    } else {
+                        Write-Host "Could not parse version output. Proceeding with installation."
+                        Write-Host "##vso[task.setvariable variable=skipInstall;isOutput=true]false"
+                    }
+                } else {
+                    Write-Host "Terraform is not installed in the PATH. Proceeding with installation."
+                    Write-Host "##vso[task.setvariable variable=skipInstall;isOutput=true]false"
+                }
 
           - task: TerraformInstaller@1
             displayName: "Install Terraform"
-            inputs:
+            condition: ne(variables['TFCheck.skipInstall'], 'true')
+            inputs:              
               terraformVersion: "$(terraformVersion)"
 
           - task: AzureCLI@2
