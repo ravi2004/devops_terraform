@@ -3,13 +3,13 @@ trigger:
    include:
      - main
 
-pr:
- branches:
-   include:
-     - main
+#pr:
+# branches:
+#   include:
+#     - main
 
 pool:
- name: 'Azure Pipelines'
+ name: 'Azure Pipelines 1'
 
 variables:
  terraformWorkingDirectory: 'infra'
