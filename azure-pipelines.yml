@@ -95,6 +95,7 @@ stages:
               scriptLocation: "inlineScript"
               inlineScript: |
                 $ErrorActionPreference = "Stop"
+                hostname
                 $containerExists = az storage container exists --name "tfstate" --account-name "devopsstorageaccount1975" --auth-mode login --query exists -o tsv
                 if ($containerExists -eq "false") {
                       Write-Host "Container 'tfstate' not found. Creating it now..."
